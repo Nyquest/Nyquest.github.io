@@ -36,7 +36,7 @@
 			if(key.toUpperCase() === type.toUpperCase()){
 				type += 'Dto';
 			}
-			arr.push('\tprivate ' + type + ' ' + key + ';\n');
+			arr.push('\tpublic ' + type + ' ' + key + ';\n');
 		}
 
 		arr.push('}');
