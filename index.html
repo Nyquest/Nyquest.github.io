@@ -1,5 +1,6 @@
 <html>
-<head>
+<head lang="en">
+	<meta charset="UTF-8">    
 </head>
 <body>
 	<table class="tbl-main">
@@ -8,16 +9,18 @@
 				<textarea id="source" placeholder="Your entity java class"></textarea>
 			<td class="btn-panel">
 				<button onclick=generateDto() class="btn">Generate DTO &gt;&gt;</button>
+				<button onclick=generateDto('with.list') class="btn">Generate DTO (with list)&gt;&gt;</button>
+				<button onclick=mappingFromDto() class="btn">Mapping from DTO&gt;&gt;</button>
 				<button onclick=reset() class="btn">Reset</button>
 			<td width="45%">
-				<textarea id="result" placeholder="" disabled="true"></textarea>
+				<textarea id="result" placeholder="" readonly="true"></textarea>
 			</td>
 		</tr>
 	</table>
 </body>
 </html>
 <script type="text/javascript">
-	function generateDto(){
+	function generateDto(generatorType){
 		saveCache();
 		var className = getClassName();
 		if(!className){
@@ -39,6 +42,12 @@
 			arr.push('\tpublic ' + type + ' ' + key + ';\n');
 		}
 
+		if(generatorType === 'with.list'){
+			alert('В разработке');
+			//getGetters();
+			return;
+		}
+
 		arr.push('}');
 		setResult(arr.join(''));
 	}
@@ -47,6 +56,7 @@
 
 	function init(){		
 		setSource(localStorage.getItem('dtoMapperSource'));
+		setResult('');
 	}
 
 	function reset(){
@@ -67,7 +77,15 @@
 	}
 
 	function setResult(value){
-		return getElement('result').value = value;	
+		var result = getElement('result')
+		if(value){
+			result.classList.remove('opacity1');			
+			result.classList.add('opacity2');
+		}else{
+			result.classList.remove('opacity2');			
+			result.classList.add('opacity1');
+		}
+		return result.value = value;	
 	}
 
 	function saveCache(){		
@@ -88,10 +106,27 @@
 		var classExpr = /private\s+(\w+)\s+(\w+)\s*;.*/g;	
 		var match;
 		var map = {};
-		while(match = classExpr.exec(getSource())){			
+		var source = getSource();
+		while(match = classExpr.exec(source)){			
 			map[match[2]] = match[1];			
 		}
 		return map;
+	}
+
+	function getGetters(){
+		console.log('getGetters()');
+		var source = getSource();
+		var getterExpr = /public\s+(\w+)\s+(get\w+)\s*(\s*)/g;
+		var match;
+		var map = {};
+		while(match = getterExpr.exec(source)){
+			map[match[2]] = match[1];
+		}
+		return map;
+	}
+
+	function mappingFromDto(){
+		alert('В разработке');
 	}
 
 </script>
@@ -101,7 +136,9 @@
 		width: 100%;
 		border: 0;
 		margin: 0;
-		padding: 0;		
+		padding: 0;	
+		background-image: url('math_model.jpg');	
+		background-repeat: repeat;
 	}
 	.tbl-main {
 		height: 100%;
@@ -124,6 +161,18 @@
 		font-family: "Courier New", "Lucida Console","Consolas";
 		font-size: 20pt;
 		border: solid 1px silver;		
+	}
+
+	#result{
+		background: #eee;		
+	}
+
+	.opacity1{
+		opacity: 0.5;	
+	}
+
+	.opacity2{
+		opacity: 0.9;	
 	}
 
 
