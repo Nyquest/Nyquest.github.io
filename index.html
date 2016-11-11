@@ -1,1 +1,130 @@
-Hello, IO!
+<html>
+<head>
+</head>
+<body>
+	<table class="tbl-main">
+		<tr>
+			<td width="45%">			
+				<textarea id="source" placeholder="Your entity java class"></textarea>
+			<td class="btn-panel">
+				<button onclick=generateDto() class="btn">Generate DTO &gt;&gt;</button>
+				<button onclick=reset() class="btn">Reset</button>
+			<td width="45%">
+				<textarea id="result" placeholder="" disabled="true"></textarea>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>
+<script type="text/javascript">
+	function generateDto(){
+		saveCache();
+		var className = getClassName();
+		if(!className){
+			alert('Class not found');
+			return;
+		}else{
+			console.log(className + ' FOUND');
+		}
+		var fieldMap = getFields();
+
+		var arr = [];
+		arr.push('public class ' + className + "Dto {\n");
+
+		for(var key in fieldMap){
+			var type = fieldMap[key];
+			if(key.toUpperCase() === type.toUpperCase()){
+				type += 'Dto';
+			}
+			arr.push('\tprivate ' + type + ' ' + key + ';\n');
+		}
+
+		arr.push('}');
+		setResult(arr.join(''));
+	}
+
+	init();
+
+	function init(){		
+		setSource(localStorage.getItem('dtoMapperSource'));
+	}
+
+	function reset(){
+		setSource('');
+		setResult('');
+	}
+
+	function getElement(name){
+		return document.getElementById(name);
+	}
+
+	function getSource(){
+		return getElement('source').value;
+	}
+
+	function setSource(value){
+		return getElement('source').value = value;	
+	}
+
+	function setResult(value){
+		return getElement('result').value = value;	
+	}
+
+	function saveCache(){		
+		localStorage.setItem('dtoMapperSource', getSource());
+	}
+
+	function getClassName(){		
+		var classExpr = /public\s+class\s+(\w+).*/g;	
+		var match = classExpr.exec(getSource());
+		if(match){			
+			return match[1];
+		}else{
+			return null;
+		}
+	}
+
+	function getFields(){
+		var classExpr = /private\s+(\w+)\s+(\w+)\s*;.*/g;	
+		var match;
+		var map = {};
+		while(match = classExpr.exec(getSource())){			
+			map[match[2]] = match[1];			
+		}
+		return map;
+	}
+
+</script>
+<style type="text/css">
+	body{
+		height: 100%;
+		width: 100%;
+		border: 0;
+		margin: 0;
+		padding: 0;		
+	}
+	.tbl-main {
+		height: 100%;
+		width: 100%;	
+	}
+	.btn {
+		width: 100%;	
+		font-family: "Courier New", "Lucida Console","Consolas";
+		font-size: 20pt;
+		margin-top: 50px;
+	}
+	.btn-panel{
+		vertical-align: top;
+		padding-top: 25px;
+	}
+
+	textarea{
+		height: 100%;
+		width: 100%;
+		font-family: "Courier New", "Lucida Console","Consolas";
+		font-size: 20pt;
+		border: solid 1px silver;		
+	}
+
+
+</style>
