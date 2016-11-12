@@ -11,7 +11,8 @@
 				<button onclick=generateDto() class="btn">Generate DTO &gt;&gt;</button>
 				<button onclick=generateDto('with.list') class="btn">Generate DTO (with list)&gt;&gt;</button>
 				<button onclick=mappingFromDto() class="btn">Mapping from DTO&gt;&gt;</button>
-				<button onclick=reset() class="btn">Reset</button>
+				<button onclick=reset() class="btn">Reset</button>				
+				<div class="version">version 0.0.3</div>
 			<td width="45%">
 				<textarea id="result" placeholder="" readonly="true"></textarea>
 			</td>
@@ -20,6 +21,9 @@
 </body>
 </html>
 <script type="text/javascript">
+
+	var defaultTypeExpr = /^([bB]oolean|int|Integer|[lL]ong|[fF]loat|[dD]ouble|[sS]hort|[bB]yte|Number|BigInteger|BigDecimal|String|char|Character|Blob|Clob|Date|Time|Timestamp|LocalDate)$/;
+
 	function generateDto(generatorType){
 		saveCache();
 		var className = getClassName();
@@ -32,15 +36,38 @@
 		var fieldMap = getFields();
 
 		var arr = [];
-		arr.push('public class ' + className + "Dto {\n");
+		var dtoClassName = className + "Dto";
+		arr.push('public class ' + dtoClassName + " {\n");
 
 		for(var key in fieldMap){
 			var type = fieldMap[key];
-			if(key.toUpperCase() === type.toUpperCase()){
-				type += 'Dto';
+			var match = defaultTypeExpr.exec(type);
+			if(match){
+				arr.push('\tpublic ' + type + ' ' + key + ';\n');	
+			}else{
+				arr.push('\tpublic ' + type + 'Dto ' + key + ';\n');	
+				arr.push('\tpublic Long ' + key + 'Id;\n');
 			}
-			arr.push('\tpublic ' + type + ' ' + key + ';\n');
 		}
+
+		arr.push('\n\tpublic ' + dtoClassName + "() {\n");
+		arr.push('\t\t\n');
+		arr.push('\t}\n');
+
+		var varName = decapitalizeFirstLetter(className);
+		arr.push('\n\tpublic ' + dtoClassName + "(" + className + " " + varName + ") {\n");
+		for(var key in fieldMap){
+			var type = fieldMap[key];
+			var match = defaultTypeExpr.exec(type);
+			if(match){
+				arr.push('\t\tthis.' + key + ' = ' + varName + '.' + detectGetMethod(key,type) + '();\n');	
+			}else{
+				//arr.push('\t\tthis.' + key + ' = ' + varName + '.' + detectGetMethod(key + 'Dto',type) + '();\n');
+				//arr.push('\t\tthis.' + key + ' = ' + varName + '.' + detectGetMethod(key + 'Id','Long') + '();\n');
+			}
+			
+		}
+		arr.push('\t}\n\n');		
 
 		if(generatorType === 'with.list'){
 			alert('В разработке');
@@ -129,6 +156,25 @@
 		alert('В разработке');
 	}
 
+	function decapitalizeFirstLetter(string) {
+    	return string.charAt(0).toLowerCase() + string.slice(1);
+	}
+
+	function capitalizeFirstLetter(string) {
+    	return string.charAt(0).toUpperCase() + string.slice(1);
+	}
+
+	function detectGetMethod(key,type){
+		if(type === 'boolean' || type === 'Boolean'){
+			//return key;
+			//TODO checks
+			return 'get' + capitalizeFirstLetter(key);
+		}else{
+			return 'get' + capitalizeFirstLetter(key);
+		}
+	}
+
+
 </script>
 <style type="text/css">
 	body{
@@ -173,6 +219,13 @@
 
 	.opacity2{
 		opacity: 0.9;	
+	}
+
+	.version{
+		margin-top: 25px;
+		text-align: center;
+		color: #36393d;
+		background: silver;
 	}
 
 
